@@ -96,7 +96,7 @@ const Post = ({ publication, post }: PostProps) => {
 		<>
 			<Head>
 				<title>{post.seo?.title || post.title}</title>
-				<link rel="canonical" href={`https://${process.env.NEXT_PUBLIC_DOMAIN}/${post.slug}`} />
+				<link rel="canonical" href={`https://${process.env.NEXT_PUBLIC_DOMAIN}${process.env.NEXT_PUBLIC_BASE_URL}/${post.slug}`} />
 				<meta name="description" content={post.seo?.description || post.subtitle || post.brief} />
 				<meta property="twitter:card" content="summary_large_image" />
 				<meta property="twitter:title" content={post.seo?.title || post.title} />
