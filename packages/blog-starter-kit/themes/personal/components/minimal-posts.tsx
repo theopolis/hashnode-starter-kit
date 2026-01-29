@@ -14,11 +14,11 @@ export const MinimalPosts = ({ posts }: Props) => {
 					key={post.id}
 					title={post.title}
 					date={post.publishedAt}
+					description={post.subtitle ?? post.brief}
 					author={{
 						name: post.author.name,
 					}}
 					slug={post.slug}
-					commentCount={post.comments?.totalDocuments}
 				/>
 			))}
 		</section>

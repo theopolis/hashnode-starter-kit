@@ -85,6 +85,11 @@ export default function Index({ publication, initialPosts, initialPageInfo }: Pr
 				</Head>
 				<Container className="mx-auto flex max-w-3xl flex-col items-stretch gap-10 px-5 py-10">
 					<PersonalHeader />
+					{publication.descriptionSEO && (
+						<p className="rounded-lg border border-slate-200/70 bg-slate-50/60 px-5 py-4 text-sm leading-relaxed text-slate-700 shadow-sm dark:border-slate-800/60 dark:bg-slate-900/40 dark:text-slate-200">
+							{publication.descriptionSEO}
+						</p>
+					)}
 					{posts.length > 0 && <MinimalPosts context="home" posts={posts} />}
 					{!loadedMore && pageInfo.hasNextPage && pageInfo.endCursor && (
 						<button onClick={loadMore}>
