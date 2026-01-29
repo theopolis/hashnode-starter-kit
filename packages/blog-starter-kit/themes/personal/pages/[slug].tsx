@@ -25,6 +25,7 @@ import {
 	SinglePostByPublicationDocument,
 	SlugPostsByPublicationDocument,
 	StaticPageFragment,
+	SeriesListDocument,
 } from '../generated/graphql';
 // @ts-ignore
 import { triggerCustomWidgetEmbed } from '@starter-kit/utils/trigger-custom-widget-embed';
@@ -33,12 +34,14 @@ type PostProps = {
 	type: 'post';
 	post: PostFullFragment;
 	publication: PublicationFragment;
+	seriesList: { slug: string; name: string }[];
 };
 
 type PageProps = {
 	type: 'page';
 	page: StaticPageFragment;
 	publication: PublicationFragment;
+	seriesList: { slug: string; name: string }[];
 };
 
 type Props = PostProps | PageProps;
@@ -184,12 +187,14 @@ export default function PostOrPage(props: Props) {
 	const maybePost = props.type === 'post' ? props.post : null;
 	const maybePage = props.type === 'page' ? props.page : null;
 	const publication = props.publication;
+	const seriesList = props.seriesList;
+	const activeSeries = maybePost?.series?.slug;
 
 	return (
 		<AppProvider publication={publication} post={maybePost} page={maybePage}>
 			<Layout>
 				<Container className="mx-auto flex max-w-3xl flex-col items-stretch gap-10 px-5 py-10">
-					<PersonalHeader />
+					<PersonalHeader seriesList={seriesList} activeSeries={activeSeries} />
 					<article className="flex flex-col items-start gap-10 pb-10">
 						{props.type === 'post' && <Post {...props} />}
 						{props.type === 'page' && <Page {...props} />}
@@ -214,6 +219,14 @@ export const getStaticProps: GetStaticProps<Props, Params> = async ({ params }) 
 	const host = process.env.NEXT_PUBLIC_HASHNODE_PUBLICATION_HOST;
 	const slug = params.slug;
 
+	// Fetch series list for navigation
+	const seriesData = await request(endpoint, SeriesListDocument, { host, first: 20 });
+	const seriesList =
+		seriesData.publication?.seriesList.edges.map((edge) => ({
+			slug: edge.node.slug,
+			name: edge.node.name,
+		})) || [];
+
 	const postData = await request(endpoint, SinglePostByPublicationDocument, { host, slug });
 
 	if (postData.publication?.post) {
@@ -222,6 +235,7 @@ export const getStaticProps: GetStaticProps<Props, Params> = async ({ params }) 
 				type: 'post',
 				post: postData.publication.post,
 				publication: postData.publication,
+				seriesList,
 			},
 			revalidate: 1,
 		};
@@ -235,6 +249,7 @@ export const getStaticProps: GetStaticProps<Props, Params> = async ({ params }) 
 				type: 'page',
 				page: pageData.publication.staticPage,
 				publication: pageData.publication,
+				seriesList,
 			},
 			revalidate: 1,
 		};

@@ -11,16 +11,47 @@ function hasUrl(
 	return !!navbarItem.url && navbarItem.url.length > 0;
 }
 
-export const PersonalHeader = () => {
+type SeriesInfo = {
+	slug: string;
+	name: string;
+};
+
+type Props = {
+	seriesList?: SeriesInfo[];
+	activeSeries?: string;
+};
+
+export const PersonalHeader = ({ seriesList = [], activeSeries }: Props) => {
 	const { publication } = useAppContext();
 
 	const navbarItems = publication.preferences.navbarItems.filter(hasUrl);
-	const visibleItems = navbarItems.slice(0, 2);
-	const hiddenItems = navbarItems.slice(2);
+	const otherItems = navbarItems.filter(item => !item.url?.startsWith('/series/'));
+	
+	const visibleOtherItems = otherItems.slice(0, 2);
+	const hiddenItems = otherItems.slice(2);
 
 	const navList = (
 		<ul className="flex list-none flex-row items-center gap-4 text-xs font-semibold uppercase tracking-tight text-neutral-600 dark:text-neutral-300">
-			{visibleItems.map((item) => (
+			{seriesList.map((series) => (
+				<li key={series.slug}>
+					<Link 
+						href={`/series/${series.slug}`} 
+						className={`hover:underline ${
+							activeSeries === series.slug 
+								? 'text-blue-700 dark:text-blue-400' 
+								: ''
+						}`}
+					>
+						{series.name}
+					</Link>
+				</li>
+			))}
+			
+			{seriesList.length > 0 && visibleOtherItems.length > 0 && (
+				<li className="text-neutral-300 dark:text-neutral-700">|</li>
+			)}
+			
+			{visibleOtherItems.map((item) => (
 				<li key={item.url}>
 					<a href={item.url} className="hover:underline">
 						{item.label}

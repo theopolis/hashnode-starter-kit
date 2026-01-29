@@ -10,6 +10,11 @@ fragment Post on Post {
 	publishedAt
 	slug
 	brief
+	series {
+		id
+		name
+		slug
+	}
 	tags {
 		id
 		name

@@ -22,20 +22,49 @@ import {
 	PostsByPublicationQuery,
 	PostsByPublicationQueryVariables,
 	PublicationFragment,
+	SeriesListDocument,
+	SeriesListQuery,
+	SeriesListQueryVariables,
 } from '../generated/graphql';
 
 const GQL_ENDPOINT = process.env.NEXT_PUBLIC_HASHNODE_GQL_ENDPOINT;
+
+type SeriesInfo = {
+	id: string;
+	name: string;
+	slug: string;
+	description: string | null;
+	postCount: number;
+};
 
 type Props = {
 	publication: PublicationFragment;
 	initialPosts: PostFragment[];
 	initialPageInfo: PageInfoFragment;
+	seriesList: SeriesInfo[];
 };
 
-export default function Index({ publication, initialPosts, initialPageInfo }: Props) {
+export default function Index({ publication, initialPosts, initialPageInfo, seriesList }: Props) {
 	const [posts, setPosts] = useState<PostFragment[]>(initialPosts);
 	const [pageInfo, setPageInfo] = useState<Props['initialPageInfo']>(initialPageInfo);
 	const [loadedMore, setLoadedMore] = useState(false);
+	
+	const postsBySeries = useMemo(() => {
+		const grouped = new Map<string, PostFragment[]>();
+		const uncategorized: PostFragment[] = [];
+		
+		posts.forEach((post) => {
+			if (post.series) {
+				const existing = grouped.get(post.series.slug) || [];
+				grouped.set(post.series.slug, [...existing, post]);
+			} else {
+				uncategorized.push(post);
+			}
+		});
+		
+		return { grouped, uncategorized };
+	}, [posts]);
+	
 	const tagCloud = useMemo(() => {
 		const tagsMap = new Map<string, { slug: string; name: string; count: number }>();
 		posts.forEach((post) => {
@@ -99,13 +128,49 @@ export default function Index({ publication, initialPosts, initialPageInfo }: Pr
 					/>
 				</Head>
 				<Container className="mx-auto flex max-w-3xl flex-col items-stretch gap-10 px-5 py-10">
-					<PersonalHeader />
-				{publication.about?.text && (
-					<p className="border-l-2 border-slate-200 pl-4 text-sm leading-relaxed text-slate-600 dark:border-slate-800 dark:text-slate-300">
-						{publication.about.text}
-						</p>
-					)}
-					{posts.length > 0 && <MinimalPosts context="home" posts={posts} />}
+				<PersonalHeader seriesList={seriesList} />
+				{seriesList.map((series) => {
+					const seriesPosts = postsBySeries.grouped.get(series.slug) || [];
+					const displayPosts = seriesPosts.slice(0, 10);
+					
+					if (displayPosts.length === 0) return null;
+					
+					return (
+						<section key={series.id} id={series.slug} className="flex flex-col gap-6">
+							<div className="flex items-center justify-between">
+								<div>
+									<Link href={`/series/${series.slug}`}>
+										<h2 className="text-2xl font-bold text-black hover:text-slate-600 dark:text-white dark:hover:text-slate-300">
+											{series.name}
+										</h2>
+									</Link>
+									{series.description && (
+										<p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
+											{series.description}
+										</p>
+									)}
+								</div>
+								{seriesPosts.length > 10 && (
+									<Link
+										href={`/series/${series.slug}`}
+										className="text-sm font-medium text-slate-600 hover:text-black dark:text-slate-400 dark:hover:text-white"
+									>
+										View all {seriesPosts.length} →
+									</Link>
+								)}
+							</div>
+							<MinimalPosts context="series" posts={displayPosts} />
+						</section>
+					);
+				})}
+
+				{postsBySeries.uncategorized.length > 0 && (
+					<section className="flex flex-col gap-6">
+						<h2 className="text-2xl font-bold text-black dark:text-white">Other Articles</h2>
+						<MinimalPosts context="home" posts={postsBySeries.uncategorized.slice(0, 10)} />
+					</section>
+				)}
+
 					{!loadedMore && pageInfo.hasNextPage && pageInfo.endCursor && (
 						<button onClick={loadMore}>
 							Load more
@@ -143,7 +208,7 @@ export default function Index({ publication, initialPosts, initialPageInfo }: Pr
 }
 
 export const getStaticProps: GetStaticProps<Props> = async () => {
-	const data = await request<PostsByPublicationQuery, PostsByPublicationQueryVariables>(
+	const postsData = await request<PostsByPublicationQuery, PostsByPublicationQueryVariables>(
 		GQL_ENDPOINT,
 		PostsByPublicationDocument,
 		{
@@ -152,19 +217,36 @@ export const getStaticProps: GetStaticProps<Props> = async () => {
 		},
 	);
 
-	const publication = data.publication;
+	const seriesData = await request<SeriesListQuery, SeriesListQueryVariables>(
+		GQL_ENDPOINT,
+		SeriesListDocument,
+		{
+			first: 10,
+			host: process.env.NEXT_PUBLIC_HASHNODE_PUBLICATION_HOST,
+		},
+	);
+
+	const publication = postsData.publication;
 	if (!publication) {
 		return {
 			notFound: true,
 		};
 	}
 	const initialPosts = (publication.posts.edges ?? []).map((edge) => edge.node);
+	const seriesList = (seriesData.publication?.seriesList.edges ?? []).map((edge) => ({
+		id: edge.node.id,
+		name: edge.node.name,
+		slug: edge.node.slug,
+		description: edge.node.description?.text || null,
+		postCount: edge.node.posts.totalDocuments,
+	}));
 
 	return {
 		props: {
 			publication,
 			initialPosts,
 			initialPageInfo: publication.posts.pageInfo,
+			seriesList,
 		},
 		revalidate: 1,
 	};

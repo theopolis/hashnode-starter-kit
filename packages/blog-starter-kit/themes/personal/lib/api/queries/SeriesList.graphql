@@ -1,0 +1,21 @@
+query SeriesList($host: String!, $first: Int!) {
+	publication(host: $host) {
+		...Publication
+		seriesList(first: $first) {
+			edges {
+				node {
+					id
+					name
+					slug
+					description {
+						text
+					}
+					coverImage
+					posts(first: 1) {
+						totalDocuments
+					}
+				}
+			}
+		}
+	}
+}
