@@ -1,18 +1,20 @@
 import Link from 'next/link';
-import { User } from '../generated/graphql';
+import { PostFragment, User } from '../generated/graphql';
 import { DateFormatter } from './date-formatter';
 
 type Author = Pick<User, 'name'>;
+type Tag = NonNullable<PostFragment['tags']>[number];
 
 type Props = {
 	title: string;
 	date: string;
 	description?: string | null;
+	tags?: Tag[] | null;
 	author: Author;
 	slug: string;
 };
 
-export const MinimalPostPreview = ({ title, date, description, slug }: Props) => {
+export const MinimalPostPreview = ({ title, date, description, tags, slug }: Props) => {
 	const postURL = `/${slug}`;
 
 	return (
@@ -31,6 +33,20 @@ export const MinimalPostPreview = ({ title, date, description, slug }: Props) =>
 					</>
 				)}
 			</p>
+			{tags && tags.length > 0 && (
+				<ul className="flex flex-wrap items-center gap-2 pt-1">
+					{tags.map((tag) => (
+						<li key={tag.id}>
+							<Link
+								href={`/tag/${tag.slug}`}
+								className="rounded-full border border-slate-200 px-2 py-0.5 text-xs text-slate-600 hover:bg-slate-50 dark:border-neutral-800 dark:text-neutral-300 dark:hover:bg-neutral-800"
+							>
+								#{tag.slug}
+							</Link>
+						</li>
+					))}
+				</ul>
+			)}
 		</section>
 	);
 };

@@ -15,6 +15,7 @@ export const MinimalPosts = ({ posts }: Props) => {
 					title={post.title}
 					date={post.publishedAt}
 					description={post.subtitle ?? post.brief}
+					tags={post.tags}
 					author={{
 						name: post.author.name,
 					}}

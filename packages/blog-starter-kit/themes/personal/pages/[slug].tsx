@@ -82,6 +82,7 @@ const Post = ({ publication, post }: PostProps) => {
 			triggerCustomWidgetEmbed(post.publication?.id.toString());
 			setCanLoadEmbeds(true);
 		})();
+	// eslint-disable-next-line react-hooks/exhaustive-deps -- OK.
 	}, []);
 
 	const coverImageSrc = !!post.coverImage?.url
@@ -131,10 +132,26 @@ const Post = ({ publication, post }: PostProps) => {
 			<h1 className="text-4xl font-bold leading-tight tracking-tight text-black dark:text-white">
 				{post.title}
 			</h1>
-			<div className="flex tracking-tight gap-2 text-neutral-600 dark:text-neutral-400">
-				<DateFormatter dateString={post.publishedAt} />
-				{'•'}
-				<span>{post.readTimeInMinutes} min read</span>
+			<div className="flex items-center gap-3">
+				{post.author.profilePicture && (
+					<img
+						className="h-10 w-10 rounded-full"
+						alt={post.author.name}
+						src={resizeImage(post.author.profilePicture, {
+							w: 400,
+							h: 400,
+							c: 'face',
+						})}
+					/>
+				)}
+				<div className="flex flex-col gap-0.5">
+					<span className="text-sm font-medium text-black dark:text-white">{post.author.name}</span>
+					<div className="flex gap-2 text-neutral-600 dark:text-neutral-400">
+						<DateFormatter dateString={post.publishedAt} />
+						{'•'}
+						<span>{post.readTimeInMinutes} min read</span>
+					</div>
+				</div>
 			</div>
 			{!!coverImageSrc && (
 				<div className="w-full">

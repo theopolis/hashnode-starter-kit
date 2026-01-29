@@ -58,6 +58,8 @@ export const PersonalHeader = () => {
 		</ul>
 	);
 
+	const logo = publication.preferences.logo;
+
 	return (
 		<header className="grid grid-cols-2 items-center gap-5 ">
 			<div className="col-span-full md:col-span-1">
@@ -68,7 +70,14 @@ export const PersonalHeader = () => {
 							href="/"
 							aria-label={`${publication.author.name}'s blog home page`}
 						>
-							{publication.author.profilePicture && (
+							{logo && (
+								<img
+									className="block h-8 w-auto fill-current"
+									alt={publication.title}
+									src={resizeImage(logo, { w: 400, h: 400 })}
+								/>
+							)}
+							{!logo && publication.author.profilePicture && (
 								<img
 									className="block h-8 w-8 rounded-full fill-current"
 									alt={publication.author.name}
