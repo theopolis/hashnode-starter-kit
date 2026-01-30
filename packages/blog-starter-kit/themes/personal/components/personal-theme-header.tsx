@@ -1,5 +1,6 @@
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 import { resizeImage } from '@starter-kit/utils/image';
+import Image from 'next/image';
 import Link from 'next/link';
 import { PublicationNavbarItem } from '../generated/graphql';
 import { useAppContext } from './contexts/appContext';
@@ -102,14 +103,16 @@ export const PersonalHeader = ({ seriesList = [], activeSeries }: Props) => {
 							aria-label={`${publication.author.name}'s blog home page`}
 						>
 							{logo && (
-								<img
+								<Image
 									className="block h-8 w-auto fill-current"
 									alt={publication.title}
 									src={resizeImage(logo, { w: 400, h: 400 })}
+									width={32}
+									height={32}
 								/>
 							)}
 							{!logo && publication.author.profilePicture && (
-								<img
+								<Image
 									className="block h-8 w-8 rounded-full fill-current"
 									alt={publication.author.name}
 									src={resizeImage(publication.author.profilePicture, {
@@ -117,6 +120,8 @@ export const PersonalHeader = ({ seriesList = [], activeSeries }: Props) => {
 										h: 400,
 										c: 'face',
 									})}
+									width={32}
+									height={32}
 								/>
 							)}
 							{publication.title}

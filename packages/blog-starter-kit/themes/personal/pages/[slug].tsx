@@ -8,6 +8,7 @@ import { loadIframeResizer } from '@starter-kit/utils/renderer/services/embed';
 import request from 'graphql-request';
 import { GetStaticProps } from 'next';
 import Head from 'next/head';
+import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { Container } from '../components/container';
@@ -137,9 +138,11 @@ const Post = ({ publication, post }: PostProps) => {
 			</h1>
 			<div className="flex items-center gap-3">
 				{post.author.profilePicture && (
-					<img
+					<Image
 						className="h-10 w-10 rounded-full"
 						alt={post.author.name}
+						width={40}
+						height={40}
 						src={resizeImage(post.author.profilePicture, {
 							w: 400,
 							h: 400,

@@ -12,11 +12,13 @@ import { MarkdownToHtml } from '../../components/markdown-to-html';
 import { PersonalHeader } from '../../components/personal-theme-header';
 import {
 	DraftByIdDocument,
+	PublicationByHostDocument,
+} from '../../generated/graphql';
+import type {
 	DraftByIdQuery,
 	DraftByIdQueryVariables,
 	Post,
 	Publication,
-	PublicationByHostDocument,
 	PublicationByHostQuery,
 	PublicationByHostQueryVariables,
 } from '../../generated/graphql';
